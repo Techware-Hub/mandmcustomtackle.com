@@ -1,0 +1,17 @@
+@csrf
+@if($product->exists) @method('PUT') @endif
+<div class="admin-card grid gap-5 rounded-lg border border-slate-800 bg-slate-900 p-6 lg:grid-cols-2">
+    <label><span class="text-sm font-bold">Product Name</span><input name="name" value="{{ old('name', $product->name) }}" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required></label>
+    <label><span class="text-sm font-bold">Slug</span><input name="slug" value="{{ old('slug', $product->slug) }}" placeholder="Auto-generated from name" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"></label>
+    <label><span class="text-sm font-bold">Category</span><select name="category_id" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select></label>
+    <label><span class="text-sm font-bold">SKU</span><input name="sku" value="{{ old('sku', $product->sku) }}" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"></label>
+    <label><span class="text-sm font-bold">Price</span><input name="price" type="number" step="0.01" value="{{ old('price', $product->price) }}" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required></label>
+    <label><span class="text-sm font-bold">Sale Price</span><input name="sale_price" type="number" step="0.01" value="{{ old('sale_price', $product->sale_price) }}" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"></label>
+    <label><span class="text-sm font-bold">Stock</span><input name="stock" type="number" value="{{ old('stock', $product->stock ?? 0) }}" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required></label>
+    <label><span class="text-sm font-bold">Status</span><select name="status" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="active" @selected(old('status', $product->status) === 'active')>Active</option><option value="inactive" @selected(old('status', $product->status) === 'inactive')>Inactive</option></select></label>
+    <label class="lg:col-span-2"><span class="text-sm font-bold">Short Description</span><textarea name="short_description" rows="3" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required>{{ old('short_description', $product->short_description) }}</textarea></label>
+    <label class="lg:col-span-2"><span class="text-sm font-bold">Full Description</span><textarea name="description" rows="7" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required>{{ old('description', $product->description) }}</textarea></label>
+    <label><span class="text-sm font-bold">Product Image</span><input name="image" type="file" class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"></label>
+    <label class="flex items-center gap-2 pt-7"><input type="checkbox" name="featured" value="1" @checked(old('featured', $product->featured))> Featured Product</label>
+    <div class="lg:col-span-2 flex justify-end gap-3"><a href="{{ route('admin.products.index') }}" class="rounded-lg border border-slate-700 px-4 py-2 font-bold">Cancel</a><button class="rounded-lg bg-sky-500 px-5 py-2 font-bold text-slate-950">Save Product</button></div>
+</div>

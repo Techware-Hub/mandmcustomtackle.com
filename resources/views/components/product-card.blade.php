@@ -1,8 +1,12 @@
 <article class="reveal group flex h-full flex-col overflow-hidden rounded-lg border border-sky-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-100" data-aos="fade-up" data-aos-duration="800">
     <a href="{{ route('products.show', $product->slug) }}" class="block overflow-hidden">
-        <div class="flex aspect-[4/3] items-center justify-center bg-gradient-to-br {{ $product->color ?? 'from-sky-100 to-blue-300' }} transition duration-500 group-hover:scale-105">
-            <div class="h-20 w-40 rounded-full border-4 border-white/80 bg-white/30 shadow-inner transition duration-500 group-hover:scale-110"></div>
-        </div>
+        @if ($product->image)
+            <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105">
+        @else
+            <div class="flex aspect-[4/3] items-center justify-center bg-gradient-to-br {{ $product->color ?? 'from-sky-100 to-blue-300' }} transition duration-500 group-hover:scale-105">
+                <div class="h-20 w-40 rounded-full border-4 border-white/80 bg-white/30 shadow-inner transition duration-500 group-hover:scale-110"></div>
+            </div>
+        @endif
     </a>
     <div class="flex flex-1 flex-col p-5">
         <div class="flex items-center justify-between gap-3">

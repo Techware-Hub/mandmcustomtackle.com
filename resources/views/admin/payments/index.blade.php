@@ -1,0 +1,6 @@
+@extends('admin.layouts.app')
+@section('page-title','Payment Records')
+@section('content')
+<div class="mb-5 text-right"><a href="{{ route('admin.payments.integration') }}" class="rounded-lg bg-sky-500 px-4 py-3 font-bold text-slate-950">Payment Integration Settings</a></div>
+<div class="admin-card overflow-hidden rounded-lg border border-slate-800 bg-slate-900"><table class="w-full text-left text-sm"><thead class="bg-slate-950 text-slate-400"><tr><th class="p-3">Order</th><th class="p-3">Method</th><th class="p-3">Transaction</th><th class="p-3">Amount</th><th class="p-3">Status</th><th class="p-3">Date</th></tr></thead><tbody>@forelse($payments as $payment)<tr class="border-t border-slate-800"><td class="p-3"><a href="{{ route('admin.orders.show', $payment->order) }}" class="font-bold text-sky-300">{{ $payment->order->order_number }}</a></td><td class="p-3">{{ str_replace('_', ' ', $payment->payment_method) }}</td><td class="p-3">{{ $payment->transaction_id ?? 'N/A' }}</td><td class="p-3">${{ number_format((float)$payment->amount, 2) }}</td><td class="p-3">{{ $payment->status }}</td><td class="p-3">{{ $payment->created_at->format('M j, Y') }}</td></tr>@empty<tr><td colspan="6" class="p-5">No payments.</td></tr>@endforelse</tbody></table></div><div class="mt-5">{{ $payments->links() }}</div>
+@endsection

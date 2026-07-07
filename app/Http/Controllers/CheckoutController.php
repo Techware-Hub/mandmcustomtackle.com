@@ -15,6 +15,7 @@ class CheckoutController extends Controller
     public function index(): View|RedirectResponse
     {
         $cartItems = $this->cartItems();
+        $user = auth()->user();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('success', 'Add a product to your cart before checkout.');
@@ -29,6 +30,7 @@ class CheckoutController extends Controller
             'subtotal' => $subtotal,
             'shipping' => $subtotal > 0 ? 8.00 : 0,
             'tax' => 0,
+            'user' => $user,
         ]);
     }
 

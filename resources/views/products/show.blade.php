@@ -3,9 +3,13 @@
 @section('content')
 <section class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8">
     <div class="reveal rounded-lg border border-sky-100 bg-white p-5 shadow-sm">
-        <div class="flex aspect-square items-center justify-center rounded-lg bg-gradient-to-br {{ $product->color ?? 'from-sky-100 to-blue-400' }}">
-            <div class="h-28 w-64 rounded-full border-4 border-white/80 bg-white/30"></div>
-        </div>
+        @if ($product->image)
+            <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="aspect-square w-full rounded-lg object-cover">
+        @else
+            <div class="flex aspect-square items-center justify-center rounded-lg bg-gradient-to-br {{ $product->color ?? 'from-sky-100 to-blue-400' }}">
+                <div class="h-28 w-64 rounded-full border-4 border-white/80 bg-white/30"></div>
+            </div>
+        @endif
     </div>
     <div class="reveal">
         <span class="rounded-full bg-sky-50 px-3 py-1 text-sm font-bold text-sky-700">{{ $product->category->name }}</span>

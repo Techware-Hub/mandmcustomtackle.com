@@ -11,7 +11,7 @@
                 @foreach ([['name','Name'], ['email','Email'], ['phone','Phone'], ['address','Shipping Address'], ['city','City'], ['state','State'], ['zip','ZIP Code']] as [$name, $label])
                     <label class="{{ $name === 'address' ? 'md:col-span-2' : '' }}">
                         <span class="text-sm font-bold text-slate-700">{{ $label }}</span>
-                        <input name="{{ $name }}" value="{{ old($name) }}" class="mt-2 w-full rounded-lg border border-sky-200 px-3 py-3" required>
+                        <input name="{{ $name }}" value="{{ old($name, $name === 'name' ? ($user->name ?? '') : ($name === 'email' ? ($user->email ?? '') : '')) }}" class="mt-2 w-full rounded-lg border border-sky-200 px-3 py-3" required>
                         @error($name)<span class="mt-1 block text-sm text-red-600">{{ $message }}</span>@enderror
                     </label>
                 @endforeach

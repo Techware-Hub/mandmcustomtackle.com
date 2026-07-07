@@ -15,7 +15,7 @@
     ];
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
 
             <nav class="hidden items-center gap-5 text-sm font-semibold text-slate-700 lg:flex" aria-label="Primary navigation">
                 @foreach ($navLinks as $link)
-                    <a href="{{ route($link['route']) }}" class="relative transition hover:text-sky-600 after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-sky-500 after:transition-all hover:after:w-full">{{ $link['label'] }}</a>
+                    <a href="{{ route($link['route']) }}" class="relative transition hover:text-sky-600 after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:bg-sky-500 after:transition-all {{ request()->routeIs($link['route']) ? 'text-sky-700 after:w-full' : 'after:w-0 hover:after:w-full' }}">{{ $link['label'] }}</a>
                 @endforeach
             </nav>
 
@@ -43,7 +43,21 @@
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6h15l-2 9H8L6 6Z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
                     <span class="absolute -right-1 -top-1 rounded-full bg-sky-500 px-1.5 py-0.5 text-xs font-bold text-white">{{ $cartCount }}</span>
                 </a>
-                <a href="{{ route('login') }}" class="rounded-full bg-blue-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700">Account</a>
+                <button type="button" data-theme-toggle data-theme-scope="public" class="rounded-full border border-sky-200 px-3 py-2 text-sm font-bold text-blue-950 transition hover:bg-sky-50">Theme</button>
+                @guest
+                    <a href="{{ route('login') }}" class="rounded-full bg-blue-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700">Login</a>
+                    <a href="{{ route('register') }}" class="rounded-full border border-sky-200 px-4 py-2 text-sm font-bold text-blue-950 transition hover:bg-sky-50">Register</a>
+                @else
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="rounded-full bg-blue-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700">Admin Dashboard</a>
+                    @else
+                        <a href="{{ route('customer.account') }}" class="rounded-full bg-blue-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700">My Account</a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="rounded-full border border-sky-200 px-4 py-2 text-sm font-bold text-blue-950 transition hover:bg-sky-50">Logout</button>
+                    </form>
+                @endguest
             </div>
 
             <button class="mobile-menu-toggle rounded-full border border-sky-200 p-3 text-blue-950 lg:hidden" aria-controls="mobile-menu" aria-expanded="false">
@@ -54,11 +68,25 @@
         <div id="mobile-menu" class="hidden border-t border-sky-100 bg-white px-4 py-4 lg:hidden">
             <nav class="grid gap-3 text-sm font-semibold text-slate-700" aria-label="Mobile navigation">
                 @foreach ($navLinks as $link)
-                    <a href="{{ route($link['route']) }}" class="rounded-lg px-3 py-2 transition hover:bg-sky-50 hover:text-sky-700">{{ $link['label'] }}</a>
+                    <a href="{{ route($link['route']) }}" class="rounded-lg px-3 py-2 transition hover:bg-sky-50 hover:text-sky-700 {{ request()->routeIs($link['route']) ? 'bg-sky-50 text-sky-700' : '' }}">{{ $link['label'] }}</a>
                 @endforeach
-                <div class="grid grid-cols-2 gap-3 pt-2">
+                <div class="grid gap-3 pt-2 sm:grid-cols-2">
                     <a href="{{ route('cart.index') }}" class="rounded-lg border border-sky-200 px-3 py-2 text-center">Cart ({{ $cartCount }})</a>
-                    <a href="{{ route('login') }}" class="rounded-lg bg-blue-950 px-3 py-2 text-center text-white">Account</a>
+                    @guest
+                        <a href="{{ route('login') }}" class="rounded-lg bg-blue-950 px-3 py-2 text-center text-white">Login</a>
+                        <a href="{{ route('register') }}" class="rounded-lg border border-sky-200 px-3 py-2 text-center">Register</a>
+                    @else
+                        <button type="button" data-theme-toggle data-theme-scope="public" class="rounded-lg border border-sky-200 px-3 py-2 text-center">Theme</button>
+                        @if (auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="rounded-lg bg-blue-950 px-3 py-2 text-center text-white">Admin Dashboard</a>
+                        @else
+                            <a href="{{ route('customer.account') }}" class="rounded-lg bg-blue-950 px-3 py-2 text-center text-white">My Account</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full rounded-lg border border-sky-200 px-3 py-2 text-center">Logout</button>
+                        </form>
+                    @endguest
                 </div>
             </nav>
         </div>
@@ -67,6 +95,11 @@
     @if (session('success'))
         <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{{ session('error') }}</div>
         </div>
     @endif
 

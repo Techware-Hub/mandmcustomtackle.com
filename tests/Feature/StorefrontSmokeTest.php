@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\ContactMessage;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class StorefrontSmokeTest extends TestCase
@@ -30,6 +32,7 @@ class StorefrontSmokeTest extends TestCase
             '/cart',
             '/login',
             '/register',
+            '/track-order',
             '/privacy-policy',
             '/terms-and-conditions',
             '/return-policy',
@@ -106,5 +109,52 @@ class StorefrontSmokeTest extends TestCase
             'id' => $product->id,
             'stock' => $product->stock - 2,
         ]);
+    }
+
+    public function test_seeded_admin_can_login_view_dashboard_and_logout(): void
+    {
+        $this->seed();
+
+        $admin = User::where('email', 'admin@mandmcustomtackle.com')->firstOrFail();
+
+        $this->assertSame('admin', $admin->role);
+        $this->assertTrue(Hash::check('Admin@12345', $admin->password));
+
+        $this->post('/login', [
+            'email' => 'admin@mandmcustomtackle.com',
+            'password' => 'Admin@12345',
+        ])->assertRedirect('/admin/dashboard');
+
+        $this->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('Recent Orders');
+
+        $this->post('/logout')
+            ->assertRedirect('/')
+            ->assertSessionHas('success');
+
+        $this->assertGuest();
+    }
+
+    public function test_customer_registration_login_and_dashboard_work(): void
+    {
+        $this->post('/register', [
+            'name' => 'Taylor Fisher',
+            'email' => 'taylor@example.com',
+            'password' => 'customer-password',
+            'password_confirmation' => 'customer-password',
+        ])->assertRedirect('/my-account');
+
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas(User::class, [
+            'email' => 'taylor@example.com',
+            'role' => 'customer',
+        ]);
+
+        $this->get('/my-account')
+            ->assertOk()
+            ->assertSee('Welcome, Taylor Fisher')
+            ->assertSee('Continue Shopping');
     }
 }

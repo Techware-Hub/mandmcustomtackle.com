@@ -1,0 +1,6 @@
+@extends('admin.layouts.app')
+@section('page-title', 'All Blog Posts')
+@section('content')
+<div class="mb-5 text-right"><a href="{{ route('admin.blogs.create') }}" class="rounded-lg bg-sky-500 px-4 py-3 font-bold text-slate-950">Add Blog</a></div>
+<div class="admin-card overflow-hidden rounded-lg border border-slate-800 bg-slate-900"><table class="w-full text-left text-sm"><thead class="bg-slate-950 text-slate-400"><tr><th class="p-3">Title</th><th class="p-3">Status</th><th class="p-3">Published</th><th class="p-3">Actions</th></tr></thead><tbody>@forelse($blogs as $blog)<tr class="border-t border-slate-800"><td class="p-3 font-bold text-white">{{ $blog->title }}</td><td class="p-3">{{ $blog->status ?? 'published' }}</td><td class="p-3">{{ optional($blog->published_at)->format('M j, Y') ?? 'Draft' }}</td><td class="p-3 flex gap-2"><a href="{{ route('admin.blogs.edit', $blog) }}" class="text-sky-300 font-bold">Edit</a><form method="POST" action="{{ route('admin.blogs.destroy', $blog) }}">@csrf @method('DELETE')<button class="text-red-300 font-bold">Delete</button></form></td></tr>@empty<tr><td colspan="4" class="p-5">No blog posts.</td></tr>@endforelse</tbody></table></div><div class="mt-5">{{ $blogs->links() }}</div>
+@endsection

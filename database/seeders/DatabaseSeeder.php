@@ -17,12 +17,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(ShopSeeder::class);
+        $this->call(AdminUserSeeder::class);
 
-        User::firstOrCreate([
+        User::updateOrCreate([
             'email' => 'test@example.com',
         ], [
             'name' => 'Test User',
             'password' => Hash::make('password'),
+            'role' => 'customer',
         ]);
     }
 }

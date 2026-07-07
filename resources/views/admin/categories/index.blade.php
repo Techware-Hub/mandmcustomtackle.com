@@ -1,0 +1,6 @@
+@extends('admin.layouts.app')
+@section('page-title', 'Product Categories')
+@section('content')
+<div class="mb-5 text-right"><a href="{{ route('admin.categories.create') }}" class="rounded-lg bg-sky-500 px-4 py-3 font-bold text-slate-950">Add Category</a></div>
+<div class="admin-card overflow-hidden rounded-lg border border-slate-800 bg-slate-900"><table class="w-full text-left text-sm"><thead class="bg-slate-950 text-slate-400"><tr><th class="p-3">Name</th><th class="p-3">Slug</th><th class="p-3">Products</th><th class="p-3">Status</th><th class="p-3">Actions</th></tr></thead><tbody>@forelse($categories as $category)<tr class="border-t border-slate-800"><td class="p-3 font-bold text-white">{{ $category->name }}</td><td class="p-3">{{ $category->slug }}</td><td class="p-3">{{ $category->products_count }}</td><td class="p-3">{{ $category->status ?? 'active' }}</td><td class="p-3 flex gap-2"><a href="{{ route('admin.categories.edit', $category) }}" class="text-sky-300 font-bold">Edit</a><form method="POST" action="{{ route('admin.categories.destroy', $category) }}">@csrf @method('DELETE')<button class="text-red-300 font-bold">Delete</button></form></td></tr>@empty<tr><td colspan="5" class="p-5">No categories.</td></tr>@endforelse</tbody></table></div><div class="mt-5">{{ $categories->links() }}</div>
+@endsection
