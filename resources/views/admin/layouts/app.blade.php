@@ -11,10 +11,11 @@
         [
             'key' => 'products',
             'label' => 'Products',
-            'active' => request()->routeIs('admin.products.*') || request()->routeIs('admin.categories.*') || request()->routeIs('admin.inventory.*'),
+            'active' => request()->routeIs('admin.products.*') || request()->routeIs('admin.product-variants.*') || request()->routeIs('admin.categories.*') || request()->routeIs('admin.inventory.*'),
             'children' => [
                 ['label' => 'All Products', 'route' => 'admin.products.index'],
                 ['label' => 'Add New Product', 'route' => 'admin.products.create'],
+                ['label' => 'Product Variants', 'route' => 'admin.product-variants.index'],
                 ['label' => 'Product Categories', 'route' => 'admin.categories.index'],
                 ['label' => 'Inventory / Stock', 'route' => 'admin.products.index', 'params' => ['stock' => 'low']],
             ],

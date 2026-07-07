@@ -15,9 +15,16 @@
 </section>
 <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        @foreach ($products as $product)
+        @forelse ($products as $product)
             <x-product-card :product="$product" />
-        @endforeach
+        @empty
+            <div class="rounded-lg border border-sky-100 bg-white p-8 text-center shadow-sm sm:col-span-2 lg:col-span-4">
+                <p class="text-slate-700">No active products are available yet.</p>
+            </div>
+        @endforelse
     </div>
+    @if(method_exists($products, 'links'))
+        <div class="mt-8">{{ $products->links() }}</div>
+    @endif
 </section>
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
@@ -54,20 +55,47 @@ class CheckoutController extends Controller
 
         $order = DB::transaction(function () use ($validated) {
             $cart = collect(session('cart', []))
-                ->mapWithKeys(fn ($quantity, $productId) => [(int) $productId => (int) $quantity])
+                ->mapWithKeys(fn ($quantity, $key) => [(string) $key => (int) $quantity])
                 ->filter(fn ($quantity) => $quantity > 0);
 
             /** @var EloquentCollection<int, Product> $products */
+            $productIds = $cart->keys()->reject(fn ($key) => str_starts_with($key, 'variant:'))->map(fn ($key) => (int) $key);
+            $variantIds = $cart->keys()->filter(fn ($key) => str_starts_with($key, 'variant:'))->map(fn ($key) => (int) substr($key, 8));
+
             $products = Product::query()
-                ->whereIn('id', $cart->keys())
+                ->whereIn('id', $productIds)
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
-            abort_if($products->isEmpty(), 422, 'Your cart does not contain valid products.');
+            $variants = ProductVariant::query()
+                ->with('product')
+                ->whereIn('id', $variantIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
 
-            $items = $cart->map(function (int $quantity, int $productId) use ($products) {
-                $product = $products->get($productId);
+            abort_if($products->isEmpty() && $variants->isEmpty(), 422, 'Your cart does not contain valid products.');
+
+            $items = $cart->map(function (int $quantity, string $key) use ($products, $variants) {
+                if (str_starts_with($key, 'variant:')) {
+                    $variant = $variants->get((int) substr($key, 8));
+
+                    abort_if(! $variant || ! $variant->isPurchasable(), 422, 'One or more product variants in your cart are no longer available.');
+                    abort_if($quantity > $variant->stock, 422, $variant->product->name.' '.$variant->color_name.' '.$variant->weight.' does not have enough stock available.');
+
+                    $price = (float) $variant->price;
+
+                    return [
+                        'product' => $variant->product,
+                        'variant' => $variant,
+                        'quantity' => $quantity,
+                        'price' => $price,
+                        'total' => $price * $quantity,
+                    ];
+                }
+
+                $product = $products->get((int) $key);
 
                 abort_if(! $product || ! $product->isPurchasable(), 422, 'One or more products in your cart are no longer available.');
                 abort_if($quantity > $product->stock, 422, $product->name.' does not have enough stock available.');
@@ -76,6 +104,7 @@ class CheckoutController extends Controller
 
                 return [
                     'product' => $product,
+                    'variant' => null,
                     'quantity' => $quantity,
                     'price' => $price,
                     'total' => $price * $quantity,
@@ -113,12 +142,18 @@ class CheckoutController extends Controller
 
                 $order->items()->create([
                     'product_id' => $product->id,
+                    'product_variant_id' => $item['variant']?->id,
                     'product_name' => $product->name,
+                    'variant_color' => $item['variant']?->color_name,
+                    'variant_weight' => $item['variant']?->weight,
                     'product_price' => $item['price'],
                     'quantity' => $item['quantity'],
                     'total' => $item['total'],
                 ]);
 
+                if ($item['variant']) {
+                    $item['variant']->decrement('stock', $item['quantity']);
+                }
                 $product->decrement('stock', $item['quantity']);
             });
 
@@ -141,7 +176,7 @@ class CheckoutController extends Controller
 
     public function success(Order $order): View
     {
-        $order->load(['items', 'payment']);
+        $order->load(['items.product', 'payment']);
 
         return view('checkout.success', [
             'metaTitle' => 'Order '.$order->order_number.' | M&M Custom Tackle',
@@ -153,22 +188,49 @@ class CheckoutController extends Controller
     private function cartItems()
     {
         $cart = collect(session('cart', []))
-            ->mapWithKeys(fn ($quantity, $productId) => [(int) $productId => (int) $quantity])
+            ->mapWithKeys(fn ($quantity, $key) => [(string) $key => (int) $quantity])
             ->filter(fn ($quantity) => $quantity > 0);
 
         if ($cart->isEmpty()) {
             return collect();
         }
 
+        $productIds = $cart->keys()->reject(fn ($key) => str_starts_with($key, 'variant:'))->map(fn ($key) => (int) $key);
+        $variantIds = $cart->keys()->filter(fn ($key) => str_starts_with($key, 'variant:'))->map(fn ($key) => (int) substr($key, 8));
+
         $products = Product::query()
             ->with('category')
-            ->whereIn('id', $cart->keys())
+            ->whereIn('id', $productIds)
             ->where('status', 'active')
             ->get()
             ->keyBy('id');
 
-        return $cart->map(function ($quantity, $productId) use ($products) {
-            $product = $products->get($productId);
+        $variants = ProductVariant::query()
+            ->with(['product.category'])
+            ->whereIn('id', $variantIds)
+            ->where('status', 'active')
+            ->get()
+            ->keyBy('id');
+
+        return $cart->map(function ($quantity, $key) use ($products, $variants) {
+            if (str_starts_with($key, 'variant:')) {
+                $variant = $variants->get((int) substr($key, 8));
+                if (! $variant || ! $variant->isPurchasable()) {
+                    return null;
+                }
+
+                $quantity = min((int) $quantity, $variant->stock);
+
+                return (object) [
+                    'product' => $variant->product,
+                    'variant' => $variant,
+                    'quantity' => $quantity,
+                    'unitPrice' => (float) $variant->price,
+                    'lineTotal' => (float) $variant->price * $quantity,
+                ];
+            }
+
+            $product = $products->get((int) $key);
             if (! $product || $product->stock <= 0) {
                 return null;
             }
@@ -177,7 +239,9 @@ class CheckoutController extends Controller
 
             return (object) [
                 'product' => $product,
+                'variant' => null,
                 'quantity' => $quantity,
+                'unitPrice' => $product->currentPrice(),
                 'lineTotal' => $product->currentPrice() * $quantity,
             ];
         })->filter()->values();

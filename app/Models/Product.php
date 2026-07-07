@@ -29,6 +29,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
     public function currentPrice(): float
     {
         return (float) ($this->sale_price ?? $this->price);
@@ -36,6 +41,14 @@ class Product extends Model
 
     public function isPurchasable(): bool
     {
-        return $this->status === 'active' && $this->stock > 0;
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        if ($this->relationLoaded('variants') && $this->variants->isNotEmpty()) {
+            return $this->variants->contains(fn (ProductVariant $variant) => $variant->status === 'active' && $variant->stock > 0);
+        }
+
+        return $this->stock > 0;
     }
 }

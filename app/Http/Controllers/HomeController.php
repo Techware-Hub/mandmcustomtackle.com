@@ -19,7 +19,7 @@ class HomeController extends Controller
             'metaTitle' => 'M&M Custom Tackle | Sarasota Custom Fishing Tackle',
             'metaDescription' => 'Shop handcrafted fishing tackle, custom jigs, jig heads, and saltwater fishing products from Sarasota, Florida.',
             'categories' => $this->categories()->take(4),
-            'products' => $this->products()->take(4),
+            'products' => $this->products()->take(8),
             'testimonials' => $this->testimonials()->take(3),
             'posts' => $this->posts()->take(3),
             'galleryItems' => $this->gallery()->take(3),
@@ -42,7 +42,25 @@ class HomeController extends Controller
     private function products()
     {
         try {
-            $items = Product::query()->with('category')->where('featured', true)->where('status', 'active')->get();
+            $items = Product::query()
+                ->with(['category', 'variants'])
+                ->where('featured', true)
+                ->where('status', 'active')
+                ->where('stock', '>', 0)
+                ->latest()
+                ->take(8)
+                ->get();
+
+            if ($items->isEmpty()) {
+                $items = Product::query()
+                    ->with(['category', 'variants'])
+                    ->where('status', 'active')
+                    ->where('stock', '>', 0)
+                    ->latest()
+                    ->take(8)
+                    ->get();
+            }
+
             if ($items->isNotEmpty()) {
                 return $items;
             }

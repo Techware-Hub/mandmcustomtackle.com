@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminGalleryController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminProductVariantController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\AdminTestimonialController;
 use App\Http\Controllers\AuthController;
@@ -71,6 +72,10 @@ Route::post('/track-order', [TrackOrderController::class, 'search'])->name('cust
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
     Route::resource('products', AdminProductController::class)->except(['show']);
+    Route::get('product-variants', [AdminProductVariantController::class, 'index'])->name('product-variants.index');
+    Route::get('product-variants/{productVariant}/edit', [AdminProductVariantController::class, 'edit'])->name('product-variants.edit');
+    Route::put('product-variants/{productVariant}', [AdminProductVariantController::class, 'update'])->name('product-variants.update');
+    Route::delete('product-variants/{productVariant}', [AdminProductVariantController::class, 'destroy'])->name('product-variants.destroy');
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
     Route::get('inventory', [AdminProductController::class, 'index'])->defaults('stock', 'low')->name('inventory.index');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');

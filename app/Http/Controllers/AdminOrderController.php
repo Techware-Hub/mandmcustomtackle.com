@@ -22,7 +22,7 @@ class AdminOrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(['items', 'payment', 'user']);
+        $order->load(['items.product', 'payment', 'user']);
 
         return view('admin.orders.show', compact('order'));
     }

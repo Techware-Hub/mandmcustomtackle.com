@@ -37,7 +37,15 @@
             <div class="mt-5 space-y-3 border-b border-sky-100 pb-5 text-sm text-slate-700">
                 @foreach ($cartItems as $item)
                     <div class="flex justify-between gap-4">
-                        <span>{{ $item->product->name }} x {{ $item->quantity }}</span>
+                        <div class="flex gap-3">
+                            <x-product-image :product="$item->product" variant="summary" />
+                            <span>
+                                {{ $item->product->name }} x {{ $item->quantity }}
+                            @if($item->variant)
+                                <span class="block text-xs text-slate-500">{{ $item->variant->color_name }} / {{ $item->variant->weight }} at ${{ number_format($item->unitPrice, 2) }}</span>
+                            @endif
+                            </span>
+                        </div>
                         <strong>${{ number_format($item->lineTotal, 2) }}</strong>
                     </div>
                 @endforeach

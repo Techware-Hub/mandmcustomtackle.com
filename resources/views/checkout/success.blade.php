@@ -14,9 +14,15 @@
             <div class="mt-5 grid gap-4">
                 @foreach ($order->items as $item)
                     <div class="flex justify-between gap-4 rounded-lg bg-sky-50 px-4 py-3">
-                        <div>
-                            <p class="font-bold text-blue-950">{{ $item->product_name }}</p>
-                            <p class="text-sm text-slate-600">${{ number_format($item->product_price, 2) }} x {{ $item->quantity }}</p>
+                        <div class="flex gap-3">
+                            <x-product-image :product="$item->product" :name="$item->product_name" variant="summary" />
+                            <div>
+                                <p class="font-bold text-blue-950">{{ $item->product_name }}</p>
+                                @if($item->variant_color || $item->variant_weight)
+                                    <p class="text-sm text-slate-600">{{ $item->variant_color }} / {{ $item->variant_weight }}</p>
+                                @endif
+                                <p class="text-sm text-slate-600">${{ number_format($item->product_price, 2) }} x {{ $item->quantity }}</p>
+                            </div>
                         </div>
                         <strong class="text-blue-950">${{ number_format($item->total, 2) }}</strong>
                     </div>

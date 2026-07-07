@@ -6,6 +6,7 @@ use App\Models\BlogPost;
 use App\Models\Category;
 use App\Models\GalleryItem;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Testimonial;
 use App\Support\SiteData;
 use Illuminate\Database\Seeder;
@@ -23,10 +24,26 @@ class ShopSeeder extends Seeder
             $category = Category::where('slug', $product['category_slug'])->firstOrFail();
             unset($product['category_slug']);
 
-            Product::updateOrCreate(
+            $savedProduct = Product::updateOrCreate(
                 ['slug' => $product['slug']],
                 [...$product, 'category_id' => $category->id, 'featured' => $index < 4]
             );
+
+            if (in_array($savedProduct->name, ['M&M Custom Jig', 'Sarasota Snook Jig', 'Flare Hawk Jig', 'Bucktail Jig', 'Pompano Jig', 'Custom Flare Hawk Jig', 'Bluewater Bucktail Jig', 'Pompano Surf Jig'], true)) {
+                foreach (ProductVariant::DEFAULT_COLORS as $color) {
+                    foreach (ProductVariant::DEFAULT_WEIGHTS as $weight => $price) {
+                        $savedProduct->variants()->updateOrCreate(
+                            ['color_name' => $color, 'weight' => $weight],
+                            [
+                                'price' => $price,
+                                'sku' => $savedProduct->sku.'-'.strtoupper(str_replace([' ', '/', '&'], '-', $color.'-'.$weight)),
+                                'stock' => 10,
+                                'status' => 'active',
+                            ]
+                        );
+                    }
+                }
+            }
         });
 
         collect(SiteData::testimonials())->each(fn (array $testimonial) => Testimonial::updateOrCreate(

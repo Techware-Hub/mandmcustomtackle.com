@@ -17,7 +17,7 @@
         <tbody>
         @forelse($products as $product)
             <tr class="border-t border-slate-800">
-                <td class="p-3">@if($product->image)<img src="{{ asset('storage/'.$product->image) }}" class="h-12 w-12 rounded object-cover">@else<div class="h-12 w-12 rounded bg-slate-800"></div>@endif</td>
+                <td class="p-3"><x-product-image :product="$product" variant="thumb" /></td>
                 <td class="p-3 font-bold text-white">{{ $product->name }}</td><td class="p-3">{{ $product->category->name }}</td><td class="p-3">${{ number_format((float)$product->price, 2) }}</td><td class="p-3">{{ $product->stock }}</td><td class="p-3">{{ $product->featured ? 'Yes' : 'No' }}</td><td class="p-3 capitalize">{{ $product->status }}</td><td class="p-3">{{ $product->created_at->format('M j, Y') }}</td>
                 <td class="p-3"><div class="flex gap-2"><a href="{{ route('admin.products.edit', $product) }}" class="text-sky-300 font-bold">Edit</a><form method="POST" action="{{ route('admin.products.destroy', $product) }}" onsubmit="return confirm('Delete this product?')">@csrf @method('DELETE')<button class="text-red-300 font-bold">Delete</button></form></div></td>
             </tr>

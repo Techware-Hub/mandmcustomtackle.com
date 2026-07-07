@@ -7,20 +7,25 @@
         <div class="space-y-4">
             @forelse ($cartItems as $item)
                 <div class="rounded-lg border border-sky-100 bg-white p-4 shadow-sm md:flex md:items-center md:gap-5">
-                    <div class="h-24 w-24 rounded-lg bg-gradient-to-br {{ $item->product->color }}"></div>
+                    <x-product-image :product="$item->product" variant="cart" />
                     <div class="mt-4 flex-1 md:mt-0">
                         <h2 class="text-xl font-bold text-blue-950">{{ $item->product->name }}</h2>
-                        <p class="text-sm text-slate-600">${{ number_format($item->product->price, 2) }} each</p>
+                        @if($item->variant)
+                            <p class="mt-1 text-sm font-semibold text-slate-700">Color: {{ $item->variant->color_name }}</p>
+                            <p class="text-sm font-semibold text-slate-700">Weight: {{ $item->variant->weight }}</p>
+                        @endif
+                        <p class="text-sm text-slate-600">${{ number_format($item->unitPrice, 2) }} each</p>
                     </div>
                     <form method="POST" action="{{ route('cart.update') }}" class="mt-4 flex items-center gap-2 md:mt-0">
                         @csrf
-                        <input type="hidden" name="product_id" value="{{ $item->product->id }}">
-                        <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" class="w-20 rounded-lg border border-sky-200 px-3 py-2">
+                        <input type="hidden" name="cart_key" value="{{ $item->cartKey }}">
+                        <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="{{ $item->variant?->stock ?? $item->product->stock }}" class="w-20 rounded-lg border border-sky-200 px-3 py-2">
                         <button class="rounded-lg border border-sky-200 px-3 py-2 text-sm font-bold">Update</button>
                     </form>
                     <p class="mt-4 w-24 font-bold text-blue-950 md:mt-0">${{ number_format($item->lineTotal, 2) }}</p>
                     <form method="POST" action="{{ route('cart.remove', $item->product) }}">
                         @csrf
+                        <input type="hidden" name="cart_key" value="{{ $item->cartKey }}">
                         <button class="mt-3 text-sm font-bold text-red-600 md:mt-0">Remove</button>
                     </form>
                 </div>

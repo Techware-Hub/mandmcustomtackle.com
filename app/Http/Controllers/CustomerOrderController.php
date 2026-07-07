@@ -22,7 +22,7 @@ class CustomerOrderController extends Controller
 
         return view('customer.orders.show', [
             'metaTitle' => 'Order '.$order->order_number.' | M&M Custom Tackle',
-            'order' => $order->load(['items', 'payment']),
+            'order' => $order->load(['items.product', 'payment']),
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ContactMessage;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -47,18 +48,20 @@ class StorefrontSmokeTest extends TestCase
     {
         $this->seed();
         $product = Product::where('slug', 'sarasota-snook-jig')->firstOrFail();
+        $variant = ProductVariant::where('product_id', $product->id)->firstOrFail();
+        $cartKey = 'variant:'.$variant->id;
 
-        $this->post('/cart/add/'.$product->id, ['quantity' => 2])
+        $this->post('/cart/add/'.$product->id, ['product_variant_id' => $variant->id, 'quantity' => 2])
             ->assertRedirect()
-            ->assertSessionHas('cart.'.$product->id, 2);
+            ->assertSessionHas('cart.'.$cartKey, 2);
 
-        $this->post('/cart/update', ['product_id' => $product->id, 'quantity' => 3])
+        $this->post('/cart/update', ['cart_key' => $cartKey, 'quantity' => 3])
             ->assertRedirect()
-            ->assertSessionHas('cart.'.$product->id, 3);
+            ->assertSessionHas('cart.'.$cartKey, 3);
 
-        $this->post('/cart/remove/'.$product->id)
+        $this->post('/cart/remove/'.$product->id, ['cart_key' => $cartKey])
             ->assertRedirect()
-            ->assertSessionMissing('cart.'.$product->id);
+            ->assertSessionMissing('cart.'.$cartKey);
     }
 
     public function test_contact_form_stores_messages(): void

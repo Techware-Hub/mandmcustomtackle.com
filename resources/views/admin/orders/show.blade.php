@@ -4,7 +4,7 @@
 <div class="grid gap-6 xl:grid-cols-[1fr_380px]">
     <div class="admin-card rounded-lg border border-slate-800 bg-slate-900 p-6">
         <h2 class="text-xl font-black text-white">Order Items</h2>
-        <table class="mt-5 w-full text-left text-sm"><thead class="text-slate-400"><tr><th class="py-2">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>@foreach($order->items as $item)<tr class="border-t border-slate-800"><td class="py-3">{{ $item->product_name }}</td><td>{{ $item->quantity }}</td><td>${{ number_format((float)$item->product_price, 2) }}</td><td>${{ number_format((float)$item->total, 2) }}</td></tr>@endforeach</tbody></table>
+        <table class="mt-5 w-full text-left text-sm"><thead class="text-slate-400"><tr><th class="py-2">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>@foreach($order->items as $item)<tr class="border-t border-slate-800"><td class="py-3"><div class="flex items-center gap-3"><x-product-image :product="$item->product" :name="$item->product_name" variant="thumb" /><span>{{ $item->product_name }} @if($item->variant_color || $item->variant_weight)<span class="block text-xs text-slate-400">{{ $item->variant_color }} / {{ $item->variant_weight }}</span>@endif</span></div></td><td>{{ $item->quantity }}</td><td>${{ number_format((float)$item->product_price, 2) }}</td><td>${{ number_format((float)$item->total, 2) }}</td></tr>@endforeach</tbody></table>
         <p class="mt-5 text-right text-2xl font-black text-white">${{ number_format((float)$order->total_amount, 2) }}</p>
     </div>
     <aside class="grid gap-6">

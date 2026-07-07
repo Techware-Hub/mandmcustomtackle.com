@@ -29,7 +29,6 @@
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex items-center gap-3" aria-label="M&M Custom Tackle home">
                 <img src="{{ $logoPath }}" alt="M&M Custom Tackle logo" class="h-12 w-12 rounded-full object-cover ring-2 ring-sky-100">
-                <span class="hidden text-lg font-bold text-blue-950 sm:block">M&M Custom Tackle</span>
             </a>
 
             <nav class="hidden items-center gap-5 text-sm font-semibold text-slate-700 lg:flex" aria-label="Primary navigation">
